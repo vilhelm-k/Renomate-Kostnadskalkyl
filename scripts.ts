@@ -112,7 +112,7 @@ const addNewRooms = () => {
  * Asks the user for new names for the rooms
  * @param oldRoomNames: names of the rooms to be renamed
  * @param sheetNames: names of all sheets in the spreadsheet
- * @returns : { [oldName: string]: string } or null if user pressed cancel
+ * @returns : Map<oldname, newname> or null if user pressed cancel
  */
 const requestNewRoomNames = (oldRoomNames: string[], sheetNames: string[]) => {
   const ui = SpreadsheetApp.getUi()
@@ -138,6 +138,7 @@ const requestNewRoomNames = (oldRoomNames: string[], sheetNames: string[]) => {
 
 /**
  * Renames the sheets as a part of the renameRooms function
+ * @param renameMap: Map<oldname, newname>
  */
 const renameSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, renameMap: Map<string, string>) => {
   for (const [oldName, newName] of renameMap) {
@@ -147,6 +148,7 @@ const renameSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, renameMap: M
 
 /**
  * Renames the rooms in the dashboard as a part of the renameRooms function
+ * @param renameMap: Map<oldname, newname>
  */
 const renameInDashboard = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, renameMap: Map<string, string>) => {
   const dashboardSheet = <GoogleAppsScript.Spreadsheet.Sheet> ss.getSheetByName(DASHBOARD_SHEET)
