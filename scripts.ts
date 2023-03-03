@@ -27,14 +27,15 @@ type NewRoomRow = [string, string, keyof typeof BUDGETING_TYPES | '']
 
 /**
  * Creates a list of pairs of the name of the new room and the template to copy from
- * @param newRooms: [[roomName, template, type]]
+ * @param newRooms: [roomName, template, type][]
  * @param sheetNames: names of all sheets in the spreadsheet
- * @returns [[roomName, template]]
+ * @returns [roomName, template][]
  * @throws Error if roomName, template or type is empty or if roomName already exists or there are duplicate roomNames
  */
 const createRoomPairs = (newRooms: NewRoomRow[], sheetNames: string[]) => {
   let error = ''
   const roomPairs: [string, string][] = newRooms.map(([roomName, template, type], index) => {
+    roomName = roomName.trim()
     if (roomName === '') error += `Namn saknas till rum ${index + 1}\n`
     if (template === '') error += `Mall saknas till rum ${index + 1}\n`
     if (type === '') error += `Budgeteringsalternativ saknas till rum ${index + 1}\n`
