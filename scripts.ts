@@ -256,5 +256,4 @@ const deleteRooms = () => {
   deleteSheets(ss, selectedRooms)
   deleteInDashboard(ss, selectedRooms)
   configExistingRoomsRange.uncheck()
-<<<<<<< HEAD
 }
