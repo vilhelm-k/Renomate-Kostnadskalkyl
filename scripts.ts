@@ -19,8 +19,6 @@ const BUDGETING_TYPES = {
   'Avancerad': '(avancerad)'
 }
 
-const findDuplicates = (arr: any[]) => arr.filter((item, index) => arr.indexOf(item) != index)
-
 //############################################################################################################
 //############################################# ADD ROOMS ####################################################
 //############################################################################################################
@@ -29,9 +27,9 @@ type NewRoomRow = [string, string, keyof typeof BUDGETING_TYPES | '']
 
 /**
  * Creates a list of pairs of the name of the new room and the template to copy from
- * @param newRooms: [[roomName, template, type]]
+ * @param newRooms: [roomName, template, type][]
  * @param sheetNames: names of all sheets in the spreadsheet
- * @returns [[roomName, template]]
+ * @returns [roomName, template][]
  * @throws Error if roomName, template or type is empty or if roomName already exists or there are duplicate roomNames
  */
 const createRoomPairs = (newRooms: NewRoomRow[], sheetNames: string[]) => {
@@ -43,7 +41,9 @@ const createRoomPairs = (newRooms: NewRoomRow[], sheetNames: string[]) => {
     if (sheetNames.includes(roomName)) error += `Rum ${roomName} finns redan\n`
     return [roomName, `${template} ${BUDGETING_TYPES[type as keyof typeof BUDGETING_TYPES]}`]
   })
-  const duplicates = findDuplicates(roomPairs.map(([roomName]) => roomName))
+  const duplicates = roomPairs
+    .map(([roomName]) => roomName)
+    .filter((roomName, index, arr) => arr.indexOf(roomName) !== index)
   if (duplicates.length > 0) error += `Rumnamn upprepas: ${duplicates.join(', ')}\n`
   if (error !== '') throw new Error(error)
   return roomPairs
@@ -51,12 +51,11 @@ const createRoomPairs = (newRooms: NewRoomRow[], sheetNames: string[]) => {
 
 /**
  * Creates new sheets for the new rooms
- * @param newRoomName_template: [[roomName, template]]
+ * @param roomTemplatePairs: [roomName, template][]
  */
-const createNewRoomSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, newRoomName_template: [string, string][]) => {
-  for (const [roomName, template] of newRoomName_template) { // create new sheets
+const createNewRoomSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomTemplatePairs: [string, string][]) => {
+  for (const [roomName, template] of roomTemplatePairs)  // create new sheets
     ss.getSheetByName(template)?.copyTo(ss).setName(roomName).setTabColor(RENOMATE_YELLOW).showSheet()
-  }
 }
 
 /**
@@ -68,13 +67,13 @@ const dashboardSheet = <GoogleAppsScript.Spreadsheet.Sheet> ss.getSheetByName(DA
 const dashboardSumRowRange = <GoogleAppsScript.Spreadsheet.Range> ss.getRangeByName(DASHBOARD_SUM_ROW_RANGE)
   const insertRow = dashboardSumRowRange.getRow()
 
-  const richTextValues = roomNames.map(roomName => { // each room gets a link to its sheet
-    return [SpreadsheetApp.newRichTextValue()
+  const richTextValues = roomNames.map(roomName =>  // each room gets a link to its sheet
+    [SpreadsheetApp.newRichTextValue()
       .setText(roomName)
       .setLinkUrl('#gid=' + ss.getSheetByName(roomName)?.getSheetId()) // maybe quicker with `'${roomName}'!A1`?
       .setTextStyle(SpreadsheetApp.newTextStyle().setBold(false).build())
       .build()]
-  })
+  )
   dashboardSheet.insertRows(insertRow, roomNames.length)
   dashboardSheet.getRange(insertRow, 1, roomNames.length, 1).setRichTextValues(richTextValues)
 }
@@ -90,14 +89,14 @@ const addNewRooms = () => {
   try {
     const addRoomsRange = <GoogleAppsScript.Spreadsheet.Range> ss.getRangeByName(ADD_ROOMS_RANGE)
     const newRooms = <NewRoomRow[]> addRoomsRange.getValues()
-      .filter(roomRow => roomRow.join('') !== '') // [[roomName, template, type]
+      .filter(roomRow => roomRow.join('') !== '') // [roomName, template, type]
     const sheetNames = ss.getSheets().map(sheet => sheet.getName()) 
-    const newRoomName_template = createRoomPairs(newRooms, sheetNames)
-    if (newRoomName_template.length === 0) {
+    const roomTemplatePairs = createRoomPairs(newRooms, sheetNames)
+    if (roomTemplatePairs.length === 0) {
       ss.toast('Det finns inga nya rum att lägga till')
       return
     }
-    createNewRoomSheets(ss, newRoomName_template)
+    createNewRoomSheets(ss, roomTemplatePairs)
     addNewRoomsToDashboard(ss, newRooms.map(([e]) => e))
     addRoomsRange.clearContent()
   } catch (err) {
@@ -126,7 +125,7 @@ const requestNewRoomNames = (oldRoomNames: string[], sheetNames: string[]) => {
 
       if (newRoomName === '') ui.alert(`Namn saknas till rum ${oldName}`)
       else if (sheetNames.includes(newRoomName)) ui.alert(`Rum ${newRoomName} finns redan`)
-      else if (Array.from(renameMap.values()).includes(newRoomName)) ui.alert(`Du har redan angett: ${newRoomName}`)
+      else if ([...renameMap.values()].includes(newRoomName)) ui.alert(`Du har redan angett: ${newRoomName}`)
       else {
         renameMap.set(oldName, newRoomName)
         break
@@ -192,7 +191,7 @@ const renameRooms = () => {
 }
 
 //############################################################################################################
-//############################################# DELETE ROOMS ##################################################
+//############################################# DELETE ROOMS #################################################
 //############################################################################################################
 
 /**
@@ -212,14 +211,14 @@ const deleteSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomNames: s
  * Also reverses the order of the groups so that they are correctly deleted
  * @param numbers: numbers to be grouped. Assumed to be sorted
  */
-const groupAdjacentNumbers = (numbers: number[]) => {
-  return numbers.reduce((groups, num, i, arr) => {
-  if (i === 0 || num !== arr[i - 1] + 1) {
-    groups.push([num, 1])
-  } else groups[groups.length - 1][1]++
-  return groups
-  }, [] as [number, number][]).reverse()
-}
+const groupAdjacentNumbers = (numbers: number[]) => 
+  numbers.reduce((groups, num, i, arr) => {
+    if (i === 0 || num !== arr[i - 1] + 1) {
+      groups.push([num, 1])
+    } else groups[groups.length - 1][1] += 1
+    return groups
+    }, [] as [number, number][]).reverse()
+
 
 /**
  * Deletes the rooms in the dashboard
@@ -232,9 +231,7 @@ const deleteInDashboard = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomNam
     .map(roomName => firstColumnValues.findIndex(([row]) => row === roomName) + 1)
     .filter(index => index !== 0) // since we added 1 to the index
   const deleteGroups = groupAdjacentNumbers(deleteIndexes)
-  for (const [position, numRows] of deleteGroups) {
-    dashboardSheet.deleteRows(position, numRows)
-  }
+  for (const [position, numRows] of deleteGroups) dashboardSheet.deleteRows(position, numRows)
 }
     
 /**
