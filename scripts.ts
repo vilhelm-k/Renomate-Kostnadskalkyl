@@ -19,18 +19,6 @@ const BUDGETING_TYPES = {
 };
 
 // ############################################################################################################
-// ############################################# GENERAL ######################################################
-// ############################################################################################################
-/**
- * Gets the names of all selected rooms from CONFIG_EXISTING_ROOMS_RANGE
- */
-const getSelectedRooms = (configExistingRoomsRange: GoogleAppsScript.Spreadsheet.Range) =>
-  configExistingRoomsRange
-    .getValues()
-    .filter(([checkbox]) => checkbox)
-    .map(([, roomName]) => roomName);
-
-// ############################################################################################################
 // ############################################# ADD ROOMS ####################################################
 // ############################################################################################################
 
@@ -66,8 +54,9 @@ const createRoomPairs = (newRooms: NewRoomRow[], sheetNames: string[]) => {
  * @param roomTemplatePairs [roomName, template][]
  */
 const createNewRoomSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomTemplatePairs: [string, string][]) => {
-  for (const [roomName, template] of roomTemplatePairs)
+  for (const [roomName, template] of roomTemplatePairs) {
     ss.getSheetByName(template)?.copyTo(ss).setName(roomName).setTabColor(RENOMATE_YELLOW).showSheet();
+  }
 };
 
 /**
@@ -80,7 +69,7 @@ const addNewRoomsToDashboard = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, ro
   const insertRow = dashboardSumRowRange.getRow();
 
   const richTextValues = roomNames.map((roomName) => [
-    //each room gets a link to the new sheet
+    // each room gets a link to the new sheet
     SpreadsheetApp.newRichTextValue()
       .setText(roomName)
       .setLinkUrl(`#gid=${ss.getSheetByName(roomName)?.getSheetId()}`) // maybe quicker with `'${roomName}'!A1`?
@@ -185,7 +174,10 @@ const renameInDashboard = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, renameM
 const renameRooms = () => {
   const ss = SpreadsheetApp.getActive();
   const configExistingRoomsRange = <GoogleAppsScript.Spreadsheet.Range>ss.getRangeByName(CONFIG_EXISTING_ROOMS_RANGE);
-  const selectedRooms = getSelectedRooms(configExistingRoomsRange);
+  const selectedRooms = configExistingRoomsRange
+    .getValues()
+    .filter(([checkbox]) => checkbox)
+    .map(([, roomName]) => roomName);
   if (selectedRooms.length === 0) {
     ss.toast('Inga rum valda');
     return;
@@ -211,8 +203,7 @@ const renameRooms = () => {
 const deleteSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomNames: string[]) => {
   for (const roomName of roomNames) {
     const deleteSheet = ss.getSheetByName(roomName);
-    if (deleteSheet === null) continue;
-    ss.deleteSheet(deleteSheet);
+    if (deleteSheet !== null) ss.deleteSheet(deleteSheet);
   }
 };
 
@@ -252,7 +243,10 @@ const deleteRooms = () => {
   const ss = SpreadsheetApp.getActive();
   const ui = SpreadsheetApp.getUi();
   const configExistingRoomsRange = <GoogleAppsScript.Spreadsheet.Range>ss.getRangeByName(CONFIG_EXISTING_ROOMS_RANGE);
-  const selectedRooms = getSelectedRooms(configExistingRoomsRange);
+  const selectedRooms = configExistingRoomsRange
+    .getValues()
+    .filter(([checkbox]) => checkbox)
+    .map(([, roomName]) => roomName);
   if (selectedRooms.length === 0) {
     ss.toast('Inga rum valda');
     return;
