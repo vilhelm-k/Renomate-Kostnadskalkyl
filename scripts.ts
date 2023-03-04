@@ -38,8 +38,8 @@ type NewRoomRow = [string, string, keyof typeof BUDGETING_TYPES | ''];
 
 /**
  * Creates a list of pairs of the name of the new room and the template to copy from
- * @param newRooms: [roomName, template, type][]
- * @param sheetNames: names of all sheets in the spreadsheet
+ * @param newRooms [roomName, template, type][]
+ * @param sheetNames names of all sheets in the spreadsheet
  * @returns [roomName, template][]
  * @throws Error if roomName, template or type is empty or if roomName already exists or there are duplicate roomNames
  */
@@ -63,7 +63,7 @@ const createRoomPairs = (newRooms: NewRoomRow[], sheetNames: string[]) => {
 
 /**
  * Creates new sheets for the new rooms
- * @param roomTemplatePairs: [roomName, template][]
+ * @param roomTemplatePairs [roomName, template][]
  */
 const createNewRoomSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomTemplatePairs: [string, string][]) => {
   for (const [roomName, template] of roomTemplatePairs)
@@ -72,7 +72,7 @@ const createNewRoomSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomT
 
 /**
  * Adds new rooms to the dashboard
- * @param roomNames: names of the new rooms
+ * @param roomNames names of the new rooms
  */
 const addNewRoomsToDashboard = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomNames: string[]) => {
   const dashboardSheet = <GoogleAppsScript.Spreadsheet.Sheet>ss.getSheetByName(DASHBOARD_SHEET);
@@ -122,10 +122,10 @@ const addNewRooms = () => {
 // ############################################################################################################
 
 /**
- * Asks the user for new names for the rooms
- * @param oldRoomNames: names of the rooms to be renamed
- * @param sheetNames: names of all sheets in the spreadsheet
- * @returns : { [oldName: string]: string } or null if user pressed cancel
+ * Asks the user for new names for the rooms. Ensures that names are valid
+ * @param oldRoomNames names of the rooms to be renamed
+ * @param sheetNames names of all sheets in the spreadsheet
+ * @returns Map<oldName, newName> or null if user pressed cancel
  */
 const requestNewRoomNames = (oldRoomNames: string[], sheetNames: string[]) => {
   const ui = SpreadsheetApp.getUi();
@@ -206,7 +206,7 @@ const renameRooms = () => {
 
 /**
  * Deletes the sheets for the given rooms
- * @param roomNames: names of the rooms to be deleted
+ * @param roomNames names of the rooms to be deleted
  */
 const deleteSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomNames: string[]) => {
   for (const roomName of roomNames) {
@@ -217,9 +217,9 @@ const deleteSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomNames: s
 };
 
 /**
- * Groups adjacent numbers into ranges
+ * Groups adjacent numbers into ranges for more efficient deletion in the dashboard
  * Also reverses the order of the groups so that they are correctly deleted
- * @param numbers: numbers to be grouped. Assumed to be sorted
+ * @param numbers numbers to be grouped. Has to be sorted in ascending order
  */
 const groupAdjacentNumbers = (numbers: number[]) => {
   const groups: [number, number][] = [];
@@ -232,7 +232,7 @@ const groupAdjacentNumbers = (numbers: number[]) => {
 
 /**
  * Deletes the rooms in the dashboard
- * @param roomNames: names of the rooms to be deleted
+ * @param roomNames names of the rooms to be deleted
  */
 const deleteInDashboard = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomNames: string[]) => {
   const dashboardSheet = <GoogleAppsScript.Spreadsheet.Sheet>ss.getSheetByName(DASHBOARD_SHEET);
@@ -246,6 +246,7 @@ const deleteInDashboard = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomNam
 
 /**
  * Deletes the rooms selected in the config sheet
+ * Deletes both their corresponding sheets and their row in the dashboard
  */
 const deleteRooms = () => {
   const ss = SpreadsheetApp.getActive();
