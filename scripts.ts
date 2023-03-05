@@ -111,6 +111,15 @@ const addNewRooms = () => {
 // ############################################################################################################
 
 /**
+ * Gets rooms selected in config sheet
+ */
+const getSelectedRooms = (configExistingRoomsRange: GoogleAppsScript.Spreadsheet.Range) =>
+  configExistingRoomsRange
+    .getValues()
+    .filter(([checkbox]) => checkbox)
+    .map(([, roomName]) => roomName);
+
+/**
  * Asks the user for new names for the rooms. Ensures that names are valid
  * @param oldRoomNames names of the rooms to be renamed
  * @param sheetNames names of all sheets in the spreadsheet
@@ -174,10 +183,8 @@ const renameInDashboard = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, renameM
 const renameRooms = () => {
   const ss = SpreadsheetApp.getActive();
   const configExistingRoomsRange = <GoogleAppsScript.Spreadsheet.Range>ss.getRangeByName(CONFIG_EXISTING_ROOMS_RANGE);
-  const selectedRooms = configExistingRoomsRange
-    .getValues()
-    .filter(([checkbox]) => checkbox)
-    .map(([, roomName]) => roomName);
+  const selectedRooms = getSelectedRooms(configExistingRoomsRange);
+
   if (selectedRooms.length === 0) {
     ss.toast('Inga rum valda');
     return;
@@ -243,10 +250,7 @@ const deleteRooms = () => {
   const ss = SpreadsheetApp.getActive();
   const ui = SpreadsheetApp.getUi();
   const configExistingRoomsRange = <GoogleAppsScript.Spreadsheet.Range>ss.getRangeByName(CONFIG_EXISTING_ROOMS_RANGE);
-  const selectedRooms = configExistingRoomsRange
-    .getValues()
-    .filter(([checkbox]) => checkbox)
-    .map(([, roomName]) => roomName);
+  const selectedRooms = getSelectedRooms(configExistingRoomsRange);
   if (selectedRooms.length === 0) {
     ss.toast('Inga rum valda');
     return;
