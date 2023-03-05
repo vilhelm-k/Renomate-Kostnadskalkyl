@@ -33,7 +33,7 @@ type NewRoomRow = [string, string, keyof typeof BUDGETING_TYPES | ''];
  */
 const createRoomPairs = (newRooms: NewRoomRow[], sheetNames: string[]) => {
   let error = '';
-  const roomPairs: [string, string][] = newRooms.map(([inputRoomName, template, type], index) => {
+  const nameTemplatePairs: [string, string][] = newRooms.map(([inputRoomName, template, type], index) => {
     const roomName = inputRoomName.trim();
     if (roomName === '') error += `Namn saknas till rum ${index + 1}\n`;
     if (template === '') error += `Mall saknas till rum ${index + 1}\n`;
@@ -41,20 +41,20 @@ const createRoomPairs = (newRooms: NewRoomRow[], sheetNames: string[]) => {
     if (sheetNames.includes(roomName)) error += `Rum ${roomName} finns redan\n`;
     return [roomName, `${template} ${BUDGETING_TYPES[type as keyof typeof BUDGETING_TYPES]}`];
   });
-  const duplicates = roomPairs
+  const duplicates = nameTemplatePairs
     .map(([roomName]) => roomName)
     .filter((roomName, index, arr) => arr.indexOf(roomName) !== index);
   if (duplicates.length > 0) error += `Rumnamn upprepas: ${duplicates.join(', ')}\n`;
   if (error !== '') throw new Error(error);
-  return roomPairs;
+  return nameTemplatePairs;
 };
 
 /**
  * Creates new sheets for the new rooms
- * @param roomTemplatePairs [roomName, template][]
+ * @param nameTemplatePairs [roomName, template][]
  */
-const createNewRoomSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, roomTemplatePairs: [string, string][]) => {
-  for (const [roomName, template] of roomTemplatePairs) {
+const createNewRoomSheets = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, nameTemplatePairs: [string, string][]) => {
+  for (const [roomName, template] of nameTemplatePairs) {
     ss.getSheetByName(template)?.copyTo(ss).setName(roomName).setTabColor(RENOMATE_YELLOW).showSheet();
   }
 };
@@ -92,13 +92,13 @@ const addNewRooms = () => {
     const addRoomsRange = <GoogleAppsScript.Spreadsheet.Range>ss.getRangeByName(ADD_ROOMS_RANGE);
     const newRoomRows = <NewRoomRow[]>addRoomsRange.getValues().filter((roomRow) => roomRow.join('') !== '');
     const sheetNames = ss.getSheets().map((sheet) => sheet.getName());
-    const roomTemplatePairs = createRoomPairs(newRoomRows, sheetNames);
-    if (roomTemplatePairs.length === 0) {
+    const nameTemplatePairs = createRoomPairs(newRoomRows, sheetNames);
+    if (nameTemplatePairs.length === 0) {
       ss.toast('Det finns inga nya rum att lägga till');
       return;
     }
-    const newRooms = roomTemplatePairs.map(([roomName]) => roomName);
-    createNewRoomSheets(ss, roomTemplatePairs);
+    const newRooms = nameTemplatePairs.map(([roomName]) => roomName);
+    createNewRoomSheets(ss, nameTemplatePairs);
     addNewRoomsToDashboard(ss, newRooms);
     addRoomsRange.clearContent();
   } catch (err) {
