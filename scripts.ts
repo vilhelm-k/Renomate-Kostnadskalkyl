@@ -23,11 +23,12 @@ const BUDGETING_TYPES = {
 // ############################################################################################################
 // ########################################### ON STARTUP #####################################################
 // ############################################################################################################
-
+/** Used for user journey */
 const activateScripts = () => {
   SpreadsheetApp.getActive().toast('Skriptet är redan aktiverat');
 };
 
+/** Used for user journey to go from instructions to set up rooms */
 const openConfig = () => {
   const ss = SpreadsheetApp.getActive();
   const configSheet = ss.getSheetByName(CONFIG_SHEET);
