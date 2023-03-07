@@ -6,8 +6,6 @@
  */
 
 const DASHBOARD_SHEET = 'Dashboard';
-const CONFIG_SHEET = 'Konfigurera projekt';
-const BUILDER_SHEET = 'Byggbolag';
 
 const ADD_ROOMS_RANGE = 'AddRooms';
 const CONFIG_EXISTING_ROOMS_RANGE = 'ConfigExistingRooms';
