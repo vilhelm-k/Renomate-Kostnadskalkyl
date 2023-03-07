@@ -16,8 +16,8 @@ const DASHBOARD_SUM_ROW_RANGE = 'DashboardSumRow';
 
 const RENOMATE_YELLOW = '#fcd241';
 const BUDGETING_TYPES = {
-  'Enkel (rekommenderad)': '(enkel)',
-  Avancerad: '(avancerad)',
+  Enkel: '(enkel)',
+  Detaljerad: '(detaljerad)',
 };
 
 // ############################################################################################################
@@ -26,15 +26,6 @@ const BUDGETING_TYPES = {
 /** Used for user journey */
 const activateScripts = () => {
   SpreadsheetApp.getActive().toast('Skriptet är redan aktiverat');
-};
-
-/** Used for user journey to go from instructions to set up rooms */
-const openConfig = () => {
-  const ss = SpreadsheetApp.getActive();
-  const configSheet = ss.getSheetByName(CONFIG_SHEET);
-  if (configSheet !== null) SpreadsheetApp.setActiveSheet(configSheet);
-  ss.getSheetByName(DASHBOARD_SHEET)?.showSheet();
-  ss.getSheetByName(BUILDER_SHEET)?.showSheet();
 };
 
 // ############################################################################################################
