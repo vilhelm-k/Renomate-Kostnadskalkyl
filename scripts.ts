@@ -34,9 +34,8 @@ const activateScripts = () => SpreadsheetApp.getActive().toast('Skriptet är red
  * @returns [roomName, template]
  * @throws Error if roomName, template or type is empty or if roomName already exists
  */
-const createRoomNameAndTemplatePair = ([inputRoomName, template]: StringPair, sheetNames: string[]): StringPair => {
+const createRoomNameAndTemplatePair = ([roomName, template]: StringPair, sheetNames: string[]): StringPair => {
   const errors: string[] = [];
-  const roomName = inputRoomName.trim();
 
   if (roomName === '') errors.push('Namn saknas');
   if (template === '') errors.push('Mall saknas');
@@ -83,7 +82,7 @@ const addNewRooms = () => {
   try {
     const addRoomsRange = <GoogleAppsScript.Spreadsheet.Range>ss.getRangeByName(ADD_ROOMS_RANGE);
     const newRoomRow = <StringPair>addRoomsRange.getValues().filter((roomRow) => roomRow.join('') !== '')[0];
-    if (newRoomRow[0] === '' && newRoomRow[1] === '') {
+    if (!newRoomRow) {
       ss.toast('Inga nya rum att lägga till');
       return;
     }
