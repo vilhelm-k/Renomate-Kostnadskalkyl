@@ -9,8 +9,8 @@ const DASHBOARD_SHEET = 'Sammanfattning';
 
 const ADD_ROOMS_RANGE = 'AddRooms';
 const CONFIG_EXISTING_ROOMS_RANGE = 'ConfigExistingRooms';
-const DASHBOARD_MATERIAL_ROW_RANGE = 'DashboardMaterialHeaderRow';
-const DASHBOARD_SUM_ROW_RANGE = 'DashboardMaterialSumRow';
+const DASHBOARD_MATERIAL_ROW_RANGE = 'DashboardMaterialRow';
+const DASHBOARD_SUM_ROW_RANGE = 'DashboardSumRow';
 
 const RENOMATE_YELLOW = '#fcd241';
 
